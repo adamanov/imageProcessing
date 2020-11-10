@@ -1,0 +1,70 @@
+Metadata-Version: 2.1
+Name: matplotlibXtns
+Version: 20.5
+Summary: matplotlib extension functions.
+Home-page: https://github.com/mommebutenschoen/matplotlibXtns
+Author: Momme Butenschön
+Author-email: mommebu@yahoo.de
+License: GPL
+Keywords: matplotlib,numpy,scipy,netCDF4
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: License :: OSI Approved :: GNU General Public License (GPL)
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Requires-Dist: matplotlib
+Requires-Dist: numpy
+Requires-Dist: scipy
+Requires-Dist: netCDF4
+Provides-Extra: geographic_distances
+Requires-Dist: pyproj ; extra == 'geographic_distances'
+Provides-Extra: geographic_mapping
+Requires-Dist: cartopy ; extra == 'geographic_mapping'
+
+
+=====================
+matplotlibXtns README
+=====================
+
+This package contains various small extension functions for the matplotlib
+including tools for the mpl_toolkits.basemap and cartopy packages,
+if these are installed (optional).
+
+
+Installation:
+-------------
+
+After downloading the source from github_ install via pip, descending
+into the top-level of the source tree
+and launching::
+
+  pip3 install .
+
+or to install in developers mode::
+
+  pip3 install -e .
+
+Or install the latest release from PyPI::
+
+  pip install matplotlibXtns
+
+.. _github: https://github.com/mommebutenschoen/ncPyTools
+
+
+Documentation:
+--------------
+
+Documentation of this package can be found on readthedocs_.
+
+.. _readthedocs: https://ncpytoolsxtns.readthedocs.io/
+
+
