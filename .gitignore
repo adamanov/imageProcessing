@@ -1,3 +1,6 @@
 /undistinguishables
 *.png
 *.pptx
+/venv
+/.vscode
+*.odss
