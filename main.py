@@ -12,7 +12,9 @@ import argparse
 import scipy.stats as stats
 import math
 import matplotlib.mlab as mlab
-
+import os,sys, getpass
+import os.path
+from os import path
 
 # pylint: disable=E0602
 # pylint: disable=E0611
@@ -25,55 +27,6 @@ import matplotlib.mlab as mlab
 #                  Law Power Transformation               ->  gammaThreshold  (can be estimated through search)** #
 #                  basicLinearTransformation              ->  contrastGain and brightnessBias                     #
 ####################################################################################################################
-
-def plt_avg_gauss(norm = True):
-    # Channel B
-    if not norm:
-        avMean_b   = 1315.43                #mu
-        avMedian_b = 468.5
-        avStd_b    = 2181.725                #Sigma
-        avVar_b    = np.square(avStd_b)  
-      
-    if norm:
-        avMean_b   = 0.1074                #mu
-        avMedian_b = 0.0394
-        avStd_b    = 0.1664                #Sigma
-        avVar_b    = np.square(avStd_b)  
-    x = np.linspace(avMean_b - 3*avStd_b, avMean_b + 3*avStd_b, 100)
-    plt.plot(x, stats.norm.pdf(x, avMean_b, avStd_b),color='b')
-    plt.plot(x, stats.norm.pdf(x, avMean_b, avStd_b),color='b')    
-    # Channel G
-    if not norm:
-        avMean_g   = 1315.43 
-        avMedian_g = 508.375
-        avStd_g    = 1544.725
-        avVar_g    = np.square(avStd_g)
-
-    if norm:
-        avMean_g   = 0.1445
-        avMedian_g = 0.0557
-        avStd_g    = 0.20445
-        avVar_g    = np.square(avStd_g)
-    
-    x = np.linspace(avMean_g - 3*avStd_g, avMean_g + 3*avStd_g, 100)
-    plt.plot(x, stats.norm.pdf(x, avMean_g, avStd_g),color='g')
-    plt.plot(x, stats.norm.pdf(x, avMean_g, avStd_g),color='g')
-    # Channel R
-
-    if not norm:
-        avMean_r   = 1315.4225
-        avMedian_r = 450
-        avStd_r    = 1982
-        avVar_r    = np.square(avStd_r) 
-    if norm:
-        avMean_r   = 0.1315
-        avMedian_r = 0.0426
-        avStd_r    = 0.1966
-        avVar_r    = np.square(avStd_r) 
-    x = np.linspace(avMean_r - 3*avStd_r, avMean_r + 3*avStd_r, 100)
-    plt.plot(x, stats.norm.pdf(x, avMean_r, avStd_r),color ='r')
-    plt.plot(x, stats.norm.pdf(x, avMean_r, avStd_r),color ='r')
-
 
 def normalizedHistogramHSV(image):
     
@@ -97,9 +50,30 @@ def normalizedHistogramHSV(image):
 
     return hist_base
 
+def hsvCompare(img,adjImag):
+    # # HSV Histogram Comparasion
+    fig, axes = plt.subplots(nrows=1, ncols=3)
+    bx11, bx12, bx13= axes.flatten()
+    img_good_hist = normalizedHistogramHSV(img)
+    img_bad_hist = normalizedHistogramHSV(adjImag)
+
+    bx11.imshow(img_good_hist)
+    bx11.set_title("HSV_Hist")
+    bx12.imshow(img_bad_hist)
+    bx12.set_title("HSV_Hist")
+
+    comp =cv.compareHist(img_good_hist,img_bad_hist,cv.HISTCMP_CORREL)
+    text(0.71,0.9, "CORREL [-1 to 1] " + str(comp)[0:5], ha='center', va='center', transform=bx13.transAxes,color ="red")
+    comp =cv.compareHist(img_good_hist,img_bad_hist,cv.HISTCMP_CHISQR)
+    text(0.71,0.8, "CHISQR [inf to 0] " + str(comp)[0:5], ha='center', va='center', transform=bx13.transAxes,color ="red")
+    comp =cv.compareHist(img_good_hist,img_bad_hist,cv.HISTCMP_INTERSECT)
+    text(0.68,0.7, "INTERSECT [0 to 1]  " + str(comp)[0:5], ha='center', va='center', transform=bx13.transAxes,color ="red")
+    comp =cv.compareHist(img_good_hist,img_bad_hist,cv.HISTCMP_BHATTACHARYYA)
+    text(0.61,0.6, "BHATTACHARYYA [1 to 0] " + str(comp)[0:5], ha='center', va='center', transform=bx13.transAxes,color ="red")
+
 
 # ______________________Calculate histogram for current image______________________#
-def hist_plot(img, adjImag, img_name, normalize=False, gammaPlot=False, grayHist=False):
+def hist_plot(img, adjImag, img_name, normalize=True, gammaPlot=False, grayHist=True):
     # Initial Parameters
     channels = [0]
     mask = None
@@ -208,26 +182,14 @@ def hist_plot(img, adjImag, img_name, normalize=False, gammaPlot=False, grayHist
     text(0.2, 0.22, r'mu=%.3f' %(mu_2_all[1]), ha='center', va='center', transform=bx42.transAxes,color="black")
     text(0.2, 0.1, r'sigma=%.3f' %(sigma_2_all[1]), ha='center', va='center', transform=bx42.transAxes,color="black")
 
-    # # HSV Histogram Comparasion
-    # img_good_hist = normalizedHistogramHSV(img)
-    # img_bad_hist = normalizedHistogramHSV(adjImag)
-    # bx31.imshow(img_good_hist)
-    #
-    # bx31.set_title("HSV_Hist")
-    # bx32.imshow(img_bad_hist)
-    # bx32.set_title("HSV_Hist")
-    #
-    # comp =cv.compareHist(img_good_hist,img_bad_hist,cv.HISTCMP_CORREL)
-    # text(0.71,0.9, "CORREL [-1 to 1] " + str(comp)[0:5], ha='center', va='center', transform=bx31.transAxes,color ="red")
-    # comp =cv.compareHist(img_good_hist,img_bad_hist,cv.HISTCMP_CHISQR)
-    # text(0.71,0.8, "CHISQR [inf to 0] " + str(comp)[0:5], ha='center', va='center', transform=bx31.transAxes,color ="red")
-    # comp =cv.compareHist(img_good_hist,img_bad_hist,cv.HISTCMP_INTERSECT)
-    # text(0.68,0.7, "INTERSECT [0 to 1]  " + str(comp)[0:5], ha='center', va='center', transform=bx31.transAxes,color ="red")
-    # comp =cv.compareHist(img_good_hist,img_bad_hist,cv.HISTCMP_BHATTACHARYYA)
-    # text(0.61,0.6, "BHATTACHARYYA [1 to 0] " + str(comp)[0:5], ha='center', va='center', transform=bx31.transAxes,color ="red")
+
 
     if not gammaPlot:
-        plt.show(block=False)
+        #plt.show(block=True)
+        keyboardClick = False
+        while keyboardClick != True:
+            keyboardClick = plt.waitforbuttonpress()
+            plt.close()
     return
 
 
@@ -324,7 +286,6 @@ def basicLinearTransform(img, contrastGain=2.2, brightnessBias=95):
     # beta  = bias  (control brightness)
 
     # Function: g(x) = alpha * f(x) + beta
-
     alpha = contrastGain
     beta = brightnessBias - 100
 
@@ -341,16 +302,16 @@ def basicLinearTransform(img, contrastGain=2.2, brightnessBias=95):
     beta = amin - alow * alpha
 
     return res
-
 #_____________________________________________________________________________________
-
 PERCENTILE_STEP = 1
 GAMMA_STEP = 0.01
-
-
 def percentile_to_bias_and_gain(gray, clip_hist_percent):
     # Calculate grayscale histogram
-    clip_hist_percent = clip_hist_percent/2
+    # Truncate is used to keep the value in the valid range i.e. 0 to +255. If the value goes below 0 it will truncate it
+    # to zero and if the value goes above 255 it will truncate it to 255.
+    # For example : (-10) will be truncated to 0 and 270 will be truncated to 255.
+
+    clip_hist_percent = clip_hist_percent
     hist = cv.calcHist([gray],[0],None,[256],[0,256])
     hist_size = len(hist)
 
@@ -383,29 +344,33 @@ def percentile_to_bias_and_gain(gray, clip_hist_percent):
 
 def adjust_brightness_alpha_beta_gamma(gray_img, minimum_brightness, percentile_step = PERCENTILE_STEP, gamma_step = GAMMA_STEP):
     """Adjusts brightness with histogram clipping by trial and error.
+    Algorithms for Adjusting Brightness and Contrast of an Image
     """
 
     if 3 <= len(gray_img.shape):
         raise ValueError("Expected a grayscale image, color channels found")
 
     new_img = gray_img
-    percentile = percentile_step
+    percentile = percentile_step/2
     gamma = 1
     brightness_changed = False
 
     while True:
         cols, rows = new_img.shape
         brightness = np.sum(new_img) / (255 * cols * rows)
+        mean, stddev = cv.meanStdDev(new_img)
 
         if not brightness_changed:
             old_brightness = brightness
 
         if brightness >= minimum_brightness:
-            break
+            if avgMean - 15 < mean :  # this is redundant check
+                break
 
         # adjust alpha and beta
         percentile += percentile_step
         alpha, beta = percentile_to_bias_and_gain(new_img, percentile)
+        # print("alpha: %3.3f , beta: %3.3f" %(alpha,beta))
         new_img = cv.convertScaleAbs(gray_img, alpha = alpha, beta = beta)
         brightness_changed = True
 
@@ -415,8 +380,10 @@ def adjust_brightness_alpha_beta_gamma(gray_img, minimum_brightness, percentile_
 
     if brightness_changed:
         print("Old brightness: %3.3f, new brightness: %3.3f, current gamma: %3.3f " %(old_brightness, brightness,gamma))
+        print("Current mean: %3.3f, std: %3.3f" %(mean,stddev))
     else:
         print("Maintaining brightness at %3.3f" % old_brightness)
+        print("Current mean: %3.3f, std: %3.3f" %(mean,stddev))
 
     return new_img,gamma
 
@@ -480,10 +447,10 @@ def adjust_brightness_with_gamma(gray_img, minimum_brightness, gamma_step = GAMM
     while True:
         brightness = np.sum(new_img) / (255 * cols * rows)
         mean, stddev = cv.meanStdDev(new_img)
-        print("mean and std:  ", str(mean)[2:7], str(stddev)[2:7])
-        #if avgMean - 15 < mean < avgMean + 15 and avgStd - 10 < stddev < avgStd + 10:
-        if brightness >= minimum_brightness:   # additional if statement to check average mean = 2.255 and std 8.014
-            break
+
+        if brightness >= minimum_brightness:
+            if avgMean - 15 < mean:  # this is redundant check
+                break
 
         gamma += gamma_step
         new_img = adjust_gamma(gray_img, gamma = gamma)
@@ -492,8 +459,10 @@ def adjust_brightness_with_gamma(gray_img, minimum_brightness, gamma_step = GAMM
 
     if changed:
         print("Old brightness: %3.3f, new brightness: %3.3f, current gamma: %3.3f  " %(old_brightness, brightness,gamma))
+        print("Current mean: %3.3f, std: %3.3f" %(mean,stddev))
     else:
         print("Maintaining brightness at %3.3f" % old_brightness)
+        print("Current mean: %3.3f, std: %3.3f" %(mean,stddev))
 
     return new_img,gamma
 
@@ -503,59 +472,71 @@ def adjust_brightness_with_gamma(gray_img, minimum_brightness, gamma_step = GAMM
 # ______________________________________________________________________________#
 avgMean = 140.0
 avgStd  = 40.32
+
 if __name__ == '__main__':
-    bad =   "/home/adamanov/PycharmProjects/imgProcessing/006_1_2_75_left.png"
-    bad_2 = "/home/adamanov/PycharmProjects/imgProcessing/009_1_4_75_right.png"
-    bad_3 = "/home/adamanov/PycharmProjects/imgProcessing/005_3_2_75_right.png"
-    bad_4 = "/home/adamanov/PycharmProjects/imgProcessing/015_2_6_125_left.png"
+    print(" If showHistPlot = True,  please press a random key to skip a plot window ")
 
-    good =  "/home/adamanov/PycharmProjects/imgProcessing/639_2_6_175_left.png"
-    good_2 ='/home/adamanov/PycharmProjects/imgProcessing/604_1_6_175_right.png'
-    good_3 ='/home/adamanov/PycharmProjects/imgProcessing/602_2_5_125_left.png'
-    good_4 ='/home/adamanov/PycharmProjects/imgProcessing/603_4_6_175_right.png'
+    ImgFolderName  = "imagess"
+    saveFolderName = str("ImagesNewFolder")
 
-    img_bad = cv.imread(bad)
-    img_bad_2 = cv.imread(bad_2)
-    img_bad_3 = cv.imread(bad_3)
-    img_bad_4 = cv.imread(bad_4)
+    showHistPlots = True
+    writeOut = False
+    minBrightness = 0.70
 
-    img_good   = cv.imread(good)
-    img_good_2 = cv.imread(good_2)
-    img_good_3 = cv.imread(good_3)
-    img_good_4 = cv.imread(good_4)
+    method_1 = True
+    method_2 = True
 
-    filepath = bad_3
-    img = cv.imread(filepath)
-    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-    saturated = saturate(gray, 1)
-    print("gamma method")
-    bright, gamma= adjust_brightness_with_gamma(saturated, minimum_brightness = 0.60)
-    print("alpha/beta method")
-    brigth_g_a_b,gamma_alpha_beta =adjust_brightness_alpha_beta_gamma(saturated, minimum_brightness = 0.60)
+    Extension_for_files ="png"
+    currentDir = os.getcwd()
+    newFolderPath = currentDir + "/" + saveFolderName
+    ImageSearchFolderPath = os.getcwd() + "/" + ImgFolderName + "/"
 
-    adjusted_RGB_gamma = adjust_gamma(img,gamma)
-    adjusted_RGB_gamma_alpha_beta = adjust_gamma(img,gamma_alpha_beta)
+    for subdir, dirs, files in os.walk(ImageSearchFolderPath):
+        for file in files:
+            filepath = subdir + file
+            if filepath.endswith("." + Extension_for_files + ""):
+                img = cv.imread(filepath)
+                new_file_name = filepath[0:-4]
 
-    # nameWindow_0 = "gamma vs alpha/beta"
-    # cv.namedWindow(nameWindow_0,cv.WINDOW_FREERATIO)
-    # cv.imshow(nameWindow_0, np.hstack([bright, brigth_g_a_b]))
-    # cv.resizeWindow(nameWindow_0,400,200)
-    nameWindow_1 = "with_gamma " + str(gamma)[0:5]
-    #cv.namedWindow(nameWindow_1, cv.WINDOW_NORMAL)
-    #cv.imshow(nameWindow_1, np.hstack([cv.cvtColor(bright, cv.COLOR_GRAY2BGR), cv.cvtColor(adjusted_RGB_gamma, cv.COLOR_BGR2RGB)]))
+                gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+                saturated = saturate(gray, 1)
+                print('-------------------------- New Image ----------------------------------')
 
-    nameWindow_2 = "with_g_a_b " + str(gamma_alpha_beta)[0:5]
-    #cv.namedWindow(nameWindow_2, cv.WINDOW_NORMAL)
-    #cv.imshow(nameWindow_2, np.hstack([cv.cvtColor(brith_gamma, cv.COLOR_GRAY2BGR), cv.cvtColor(adjusted_RGB_gamma_alpha_beta, cv.COLOR_BGR2RGB)]))
+                if method_1:
+                    print("   Method_1: Gamma Threshold   ")
+                    bright, gamma = adjust_brightness_with_gamma(saturated, minimum_brightness=minBrightness)
+                    adjusted_RGB_gamma = adjust_gamma(img, gamma)
+                    if showHistPlots:
+                        nameWindow_1 = "Method_1 -> Gamma: " + str(gamma)[0:5]
+                        hist_plot(img, adjusted_RGB_gamma, nameWindow_1)
 
+                    if writeOut:
+                        if path.exists(newFolderPath):
+                            print(str(file), " saved into " + str(saveFolderName) + " folder")
+                            new_file_name = str(newFolderPath + "/" + file)[0:-4]
+                            cv.imwrite(new_file_name + "_1." + Extension_for_files, adjusted_RGB_gamma)
+                        else:
+                            print(str(file), " saved into same folder")
+                            cv.imwrite(new_file_name + "_1." + Extension_for_files,adjusted_RGB_gamma)
 
-    cv.waitKey(1000)
-    print(nameWindow_1)
-    hist_plot(img, adjusted_RGB_gamma, nameWindow_1, normalize=True, gammaPlot=False, grayHist=True)
-    #print(nameWindow_2)
-    #hist_plot(img, adjusted_RGB_gamma_alpha_beta, nameWindow_2, normalize=True, gammaPlot=False, grayHist=True)
+                    print('-----------------------------------------------------------------------')
 
-    # Local Histogram Equalization
+                if method_2:
+                    print("   Method_2: Alpha_Beta_Gamma   ")
+                    brigth_g_a_b, gamma_alpha_beta = adjust_brightness_alpha_beta_gamma(saturated, minimum_brightness=minBrightness)
+                    adjusted_RGB_gamma_alpha_beta = adjust_gamma(img,gamma_alpha_beta)
 
-    plt.show()
+                    if showHistPlots:
+                        nameWindow_2 = "Method_2 -> Gamma:" + str(gamma_alpha_beta)[0:5]
+                        hist_plot(img, adjusted_RGB_gamma_alpha_beta, nameWindow_2)
 
+                    if writeOut:
+                        if path.exists(newFolderPath):
+                            print(str(file), " saved into " + str(saveFolderName) + " folder")
+                            new_file_name = str(newFolderPath + "/" + file)[0:-4]
+                            cv.imwrite(new_file_name + "_2." + Extension_for_files, adjusted_RGB_gamma_alpha_beta)
+                        else:
+                            print(str(file), " saved into same folder")
+                            cv.imwrite(new_file_name + "_2." + Extension_for_files, adjusted_RGB_gamma_alpha_beta)
+
+                    print('-----------------------------------------------------------------------')

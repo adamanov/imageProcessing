@@ -1,4 +1,6 @@
 /undistinguishables
+/imagess
+/ImagesNewFolder
 *.png
 *.pptx
 /venv
