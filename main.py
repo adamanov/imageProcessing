@@ -73,7 +73,7 @@ def hsvCompare(img,adjImag):
 
 
 # ______________________Calculate histogram for current image______________________#
-def hist_plot(img, adjImag, img_name, normalize=True, gammaPlot=False, grayHist=True):
+def hist_plot(img, adjImag, img_name, normalize=True, grayHist=True):
     # Initial Parameters
     channels = [0]
     mask = None
@@ -89,21 +89,20 @@ def hist_plot(img, adjImag, img_name, normalize=True, gammaPlot=False, grayHist=
         cv.normalize(hist_grayAdj, hist_grayAdj, alpha=0, beta=1, norm_type=cv.NORM_MINMAX)
 
 
-    if not gammaPlot:
-        fig, axes = plt.subplots(nrows=4, ncols=2)
-        bx11, bx12, bx21, bx22, bx31, bx32,bx41,bx42 = axes.flatten()
-        # fig.suptitle(img_name)
-        fig.canvas.set_window_title("Compare Original with Adjusted")
-        figure = matplotlib.pyplot.gcf()
-        figure.set_size_inches(8, 10, forward=True)
-        mgr = plt.get_current_fig_manager()
-        imgRGB = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-        bx11.imshow(imgRGB)
-        bx11.set_title("Original Image")
+    fig, axes = plt.subplots(nrows=4, ncols=2)
+    bx11, bx12, bx21, bx22, bx31, bx32,bx41,bx42 = axes.flatten()
+    # fig.suptitle(img_name)
+    fig.canvas.set_window_title("Compare Original with Adjusted")
+    figure = matplotlib.pyplot.gcf()
+    figure.set_size_inches(8, 10, forward=True)
+    mgr = plt.get_current_fig_manager()
+    imgRGB = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+    bx11.imshow(imgRGB)
+    bx11.set_title("Original Image")
 
-        adjRGB = cv.cvtColor(adjImag, cv.COLOR_BGR2RGB)
-        bx12.imshow(adjRGB)
-        bx12.set_title(img_name)
+    adjRGB = cv.cvtColor(adjImag, cv.COLOR_BGR2RGB)
+    bx12.imshow(adjRGB)
+    bx12.set_title(img_name)
 
 
     if grayHist:
@@ -144,52 +143,26 @@ def hist_plot(img, adjImag, img_name, normalize=True, gammaPlot=False, grayHist=
         if normalize:
             cv.normalize(histr_org, histr_org, alpha=0, beta=1, norm_type=cv.NORM_MINMAX)
             cv.normalize(histr_adj, histr_adj, alpha=0, beta=1, norm_type=cv.NORM_MINMAX)
-            mean_n, stddev_n	=	cv.meanStdDev(img[:,:,i])
-            mean_n, stddev_n	=	cv.meanStdDev(adjImag[:,:,i])
 
-        if not gammaPlot:
-            bx31.plot(histr_org, color=color[i])
-            bx31.set_title("BGR Hist")
-            ## Add a box into the bx21 and calcualte chanel based mean std median? Do we
-            # textstr = '\n'.join((
-            #     r'$\mu=%.2f$' % (mu, ),
-            #     r'$\mathrm{median}=%.2f$' % (median, ),
-            #     r'$\sigma=%.2f$' % (sigma, )))
-            # # these are matplotlib.patch.Patch properties
-            # props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-            # bx21.text(0.05, 0.95, textstr, transform=bx21.transAxes, fontsize=14,
-            # verticalalignment='top', bbox=props)
-            bx32.plot(histr_adj, color=color[i])
-            bx32.set_title("BGR Hist")
+        bx31.plot(histr_org, color=color[i])
+        bx31.set_title("BGR Hist")
+        bx32.plot(histr_adj, color=color[i])
+        bx32.set_title("BGR Hist")
 
-        if gammaPlot:
-            ax21.plot(histr_org, color=color[i],normed=True)
-            text(0.8,0.9, "Mean: " + str(mean(hist))[0:5], ha='center', va='center', transform=ax21.transAxes)
-            text(0.8,0.8, "Std: " + str(std(hist))[0:5], ha='center', va='center', transform=ax21.transAxes)
 
-            ax21.set_title("BGR Hist")
-
-            ax22.plot(histr_adj, color=color[i])
-            ax22.set_title("BGR Hist")
-            text(0.8,0.9, "Mean: " + str(mean(histr_adj))[0:5], ha='center', va='center', transform=ax22.transAxes)
-            text(0.8,0.8, "Std: " + str(std(hist))[0:5], ha='center', va='center', transform=ax22.transAxes)
-
-    bx41.legend(loc="upper right"); bx41.grid(True)
+    bx41.legend(loc="upper right"); bx41.grid(True); bx31.grid(True);bx21.grid(True)
     text(0.2, 0.22, r'mu=%.3f' %(mu_1_all[1]), ha='center', va='center', transform=bx41.transAxes,color="black")
     text(0.2, 0.1, r'sigma=%.3f' %(sigma_1_all[1]), ha='center', va='center', transform=bx41.transAxes,color="black")
 
-    bx42.legend(loc="upper right"); bx42.grid(True)
+    bx42.legend(loc="upper right"); bx42.grid(True); bx32.grid(True);bx22.grid(True)
     text(0.2, 0.22, r'mu=%.3f' %(mu_2_all[1]), ha='center', va='center', transform=bx42.transAxes,color="black")
     text(0.2, 0.1, r'sigma=%.3f' %(sigma_2_all[1]), ha='center', va='center', transform=bx42.transAxes,color="black")
 
 
-
-    if not gammaPlot:
-        #plt.show(block=True)
-        keyboardClick = False
-        while keyboardClick != True:
-            keyboardClick = plt.waitforbuttonpress()
-            plt.close()
+    keyboardClick = False
+    while keyboardClick != True:
+        keyboardClick = plt.waitforbuttonpress()
+        plt.close()
     return
 
 
@@ -225,22 +198,6 @@ def AdptHistEqualized(image, clipContrastLimit=4.0, GridSize=5):
     return eq_image
 
 
-# _____________________Adjust Gamma (Power Law Transformation)_____________________#
-def adjust_gamma1(image, gammaThreshold):
-    # build a lookup table mapping the pixel values [0, 255] to
-    # their adjusted gamma values
-
-    # Gamma correction can be used to correct the brightness of an image
-    # by using a non linear transformation between the input values and the mapped output values:
-
-    invGamma = np.divide(1.0, gammaThreshold)
-    table = np.array([((i / 255.0) ** invGamma) * 255
-                      for i in np.arange(0, 256)]).astype("uint8")
-    # apply gamma correction using the lookup table
-    return cv.LUT(image,
-                  table)  # LUT is used to improve the performance of the computation as only 256 values needs to be calculated once.
-
-
 def gamma_search(img, gMax,gInterval = 0.5):
     global ax11, ax12, ax21, ax22
     # loop over various values of gamma in a given range
@@ -272,11 +229,12 @@ def gamma_search(img, gMax,gInterval = 0.5):
         title_gamma = str(gamma)
         ax12.set_title("Gamma: " + title_gamma[0:3])
 
-        hist_plot(img=img, adjImag=adjusted, img_name=gamma, normalize=True, gammaPlot=True)
+        hist_plot(img=img, adjImag=adjusted, img_name=gamma, normalize=True)
 
-        plt.show(block=False)
-        plt.pause(5)
-        plt.close(fig)
+        keyboardClick = False
+        while keyboardClick != True:
+            keyboardClick = plt.waitforbuttonpress()
+            plt.close()
 
 
 # _________Linear Transformation (correction of Brightness or Contrast)_____________#
@@ -364,7 +322,7 @@ def adjust_brightness_alpha_beta_gamma(gray_img, minimum_brightness, percentile_
             old_brightness = brightness
 
         if brightness >= minimum_brightness:
-            if avgMean - 15 < mean :  # this is redundant check
+            if avgMean < mean :  # this is redundant check
                 break
 
         # adjust alpha and beta
@@ -418,16 +376,23 @@ def saturate(img, percentile):
 
     return channel_norm
 
+# _____________________Adjust Gamma (Power Law Transformation)_____________________#
 def adjust_gamma(img, gamma):
     """Build a lookup table mapping the pixel values [0, 255] to
     their adjusted gamma values.
     """
+    # build a lookup table mapping the pixel values [0, 255] to
+    # their adjusted gamma values
+
+    # Gamma correction can be used to correct the brightness of an image
+    # by using a non linear transformation between the input values and the mapped output values:
+
     # code from
     # https://www.pyimagesearch.com/2015/10/05/opencv-gamma-correction/
     invGamma = 1.0 / gamma
     table = np.array([((i / 255.0) ** invGamma) * 255 for i in np.arange(0, 256)]).astype("uint8")
     # apply gamma correction using the lookup table
-    return cv.LUT(img, table)
+    return cv.LUT(img, table)  # LUT is used to improve the performance of the computation as only 256 values needs to be calculated once.
 
 
 def adjust_brightness_with_gamma(gray_img, minimum_brightness, gamma_step = GAMMA_STEP):
@@ -449,7 +414,7 @@ def adjust_brightness_with_gamma(gray_img, minimum_brightness, gamma_step = GAMM
         mean, stddev = cv.meanStdDev(new_img)
 
         if brightness >= minimum_brightness:
-            if avgMean - 15 < mean:  # this is redundant check
+            if avgMean < mean:  # this is redundant check
                 break
 
         gamma += gamma_step
@@ -481,9 +446,9 @@ if __name__ == '__main__':
 
     showHistPlots = True
     writeOut = False
-    minBrightness = 0.70
+    minBrightness = 0.60
 
-    method_1 = True
+    method_1 = False
     method_2 = True
 
     Extension_for_files ="png"
@@ -519,7 +484,8 @@ if __name__ == '__main__':
                             print(str(file), " saved into same folder")
                             cv.imwrite(new_file_name + "_1." + Extension_for_files,adjusted_RGB_gamma)
 
-                    print('-----------------------------------------------------------------------')
+                    print("")
+                    #print('-----------------------------------------------------------------------')
 
                 if method_2:
                     print("   Method_2: Alpha_Beta_Gamma   ")

@@ -3,6 +3,7 @@
 /ImagesNewFolder
 *.png
 *.pptx
-/venv
-/.vscode
+venv
+.idea
+.vscode
 *.odss
